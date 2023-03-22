@@ -70,7 +70,6 @@ class CosSimer {
   private vectorLibs: VectorLibItem[] = []
 
   constructor (props: any) { 
-    // console.log(props)
     this.vectorLibs = props.vectorLibs
   }
 
@@ -86,14 +85,16 @@ class CosSimer {
         index,
         cosSim
       })
-      console.log(item, cosSim)
+      // console.log(item, cosSim)
     })
 
     simArray.sort((a, b) => a.cosSim - b.cosSim)
 
-    const maxVector = this.vectorLibs[simArray[simArray.length - 1].index]
+    const maxSim = simArray[simArray.length - 1]
 
-    // console.log('余弦相似性结果', simArray)
+    const maxVector = this.vectorLibs[maxSim.index]
+
+    // console.log('余弦相似性结果', maxSim)
 
     return maxVector
   }
