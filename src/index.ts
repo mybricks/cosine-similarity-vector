@@ -1,16 +1,11 @@
+import { filterArray } from './utils'
+
 interface Vector {
   [key: string]: number
 }
 
-interface VectorLibItem {
-  keyWord: string
-  content: string
-}
-
 function cosineSimilarity(str1: string, str2: string) {
   // 将字符串转换为分词数组
-  // const words1 = str1.trim().split(/[\s，。？！、；：“”【】《》‘’（）—…]+/);
-  // const words2 = str2.trim().split(/[\s，。？！、；：“”【】《》‘’（）—…]+/);
   const words1 = segment(str1);
   const words2 = segment(str2);
 
@@ -67,47 +62,58 @@ function segment(text: string) { // Todo... 后续可引入更加准确的分词
 
 class CosSimer {
 
-  private vectorLibs: VectorLibItem[] = []
+  private vectorLibs: any[] = []
 
   constructor (props: any) { 
     this.vectorLibs = props.vectorLibs
   }
 
-  public getSimilarities (query: string) {
-    const simArray: { index: number, cosSim: number }[] = []
-    // const val1 = '添加一个表单'
-    // console.log('向量库', this.vectorLibs)
-    // console.log('用户输入', query)
+  public search (query: string, length: number = 1) {
+    const simArray = this._getCosSims(query)
 
-    this.vectorLibs.map((item, index) => {
-      const cosSim = cosineSimilarity(item.keyWord, query)
-      simArray.push({
-        index,
-        cosSim
-      })
-      // console.log(item, cosSim)
-    })
+    const resSim = simArray.slice(0, length)
 
-    simArray.sort((a, b) => a.cosSim - b.cosSim)
+    return filterArray(this.vectorLibs, resSim.map(item => item.index))
+  }
 
-    const maxSim = simArray[simArray.length - 1]
+  public getMaxSimilarity (query: string) {
+    const simArray = this._getCosSims(query)
+
+    const maxSim = simArray[0]
 
     const maxVector = this.vectorLibs[maxSim.index]
-
-    // console.log('余弦相似性结果', maxSim)
 
     return maxVector
   }
 
-  public addVectors (vectors: VectorLibItem[]) {
+  public addVectors (vectors: any[]) {
     this.vectorLibs = [...this.vectorLibs, ...vectors]
   }
 
-  public updateVectors (vectors: VectorLibItem[]) {
+  public updateVectors (vectors: any[]) {
     this.vectorLibs = [...vectors]
   }
-}
 
+
+  private _getCosSims (query: string) {
+    const simArray: { index: number, cosSim: number }[] = []
+
+    this.vectorLibs.map((item, index) => {
+      const vectorStr = typeof item === 'string' ? item : JSON.stringify(item)
+      const cosSim = cosineSimilarity(vectorStr, query)
+
+      simArray.push({
+        index,
+        cosSim
+      })
+    })
+
+    // 从大到小排序
+    simArray.sort((a, b) => b.cosSim - a.cosSim)
+
+    return simArray
+  }
+}
 
 export default CosSimer
 
