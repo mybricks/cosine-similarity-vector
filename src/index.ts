@@ -1,15 +1,13 @@
-import { filterArray } from './utils'
+import { filterArray, filterPunctuation } from './utils'
 
 interface Vector {
   [key: string]: number
 }
 
-function cosineSimilarity(str1: string, str2: string) {
+function cosineSimilarity(str1: string, words2: string[]) {
   // 将字符串转换为分词数组
-  const words1 = segment(str1);
-  const words2 = segment(str2);
-
-  // console.log(words1, words2)
+  const words1 = segment(filterPunctuation(str1));
+  // const words2 = segment(str2);
 
   // 将分词数组转换为词频向量
   const vector1 = getVector(words1);
@@ -97,16 +95,21 @@ class CosSimer {
 
   private _getCosSims (query: string) {
     const simArray: { index: number, cosSim: number }[] = []
+    const word = filterPunctuation(query)
+    const segmentWord = segment(word);
 
     this.vectorLibs.map((item, index) => {
       const vectorStr = typeof item === 'string' ? item : JSON.stringify(item)
-      const cosSim = cosineSimilarity(vectorStr, query)
+     
+      const cosSim = cosineSimilarity(vectorStr, segmentWord)
 
       simArray.push({
         index,
         cosSim
       })
     })
+
+    // console.log(simArray)
 
     // 从大到小排序
     simArray.sort((a, b) => b.cosSim - a.cosSim)
